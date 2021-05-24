@@ -6,23 +6,23 @@ class Playground extends Phaser.Scene {
     create() {
         this.input.keyboard.on('keydown-A', () => this.host());
         this.input.keyboard.on('keydown-B', () => this.join());
+
+        this.pawnsById = {};
+        this.connections = [];
     }
 
     host() {
         let hostId = prompt('Peer id (for hosting)', 'PeerPressure');
 
-        let peer = new Peer(hostId);
-        peer.on('open', function(id) {
-            console.log('open with', id);
-        });
-        peer.on('connection', (conn) => {
-            console.log('connection with ', conn);
-            let player = this.makePlayer(conn.id);
-            conn.on('data', (data) => {
-                console.log('data!', data, conn);
-                let {x,y} = data;
-                player.x = x;
-                player.y = y;
+        let host = new Peer(hostId);
+        host.on('connection', (playerConnection) => {
+            console.log('Got connection from ', playerConnection.peer);
+            this.connections.push(playerConnection);
+            playerConnection.on('data', (msg) => {
+                this.handleUpdate(msg);
+                for(let otherConnection of this.connections) {
+                    otherConnection.send(msg); // relay msg to all players
+                }
             });
         });
     }
@@ -32,27 +32,33 @@ class Playground extends Phaser.Scene {
         let peer = new Peer();
         
         peer.on('open', (id) => {
-            console.log('open with', id);
-            let player = this.makePlayer(id);
-            let conn = peer.connect(hostId);
-            conn.on('open', () => {
-                console.log('connected to host');
+            console.log('I am', id);
+            let hostConnection = peer.connect(hostId);
+            hostConnection.on('open', () => {
+                console.log('I am connected to host', hostConnection.peer);
                 this.input.on('pointermove', (pointer) => {
-                    console.log(pointer);
-                    player.x = pointer.x;
-                    player.y = pointer.y;
-                    conn.send({x: player.x, y: player.y});
+                    hostConnection.send({id: id, x: pointer.x, y: pointer.y});
                 });
             });
+            hostConnection.on('data', msg => this.handleUpdate(msg));
         });
-        
     }
 
-    makePlayer(id) {
-        let player = this.add.graphics();
-        player.fillStyle(0xFFFFFF, 1.0);
-        player.fillRect(0,0,10,10);
-        return player;
+    handleUpdate(msg) {
+        let {id,x,y} = msg;
+        if (this.pawnsById[id] === undefined) {
+            this.pawnsById[id] = this.makePawn(id);
+        }
+        let pawn = this.pawnsById[id];
+        pawn.x = x;
+        pawn.y = y;
+    }
+
+    makePawn(id) {
+        let pawn = this.add.graphics();
+        pawn.fillStyle(0xFFFFFF, 1.0);
+        pawn.fillRect(0,0,10,10);
+        return pawn;
     }
 }
 
