@@ -1,5 +1,3 @@
-const HOST_ID = 'PeerPressure';
-
 class Playground extends Phaser.Scene {
     constructor() {
         super("playground");
@@ -11,7 +9,9 @@ class Playground extends Phaser.Scene {
     }
 
     host() {
-        let peer = new Peer(HOST_ID);
+        let hostId = prompt('Peer id (for hosting)', 'PeerPressure');
+
+        let peer = new Peer(hostId);
         peer.on('open', function(id) {
             console.log('open with', id);
         });
@@ -28,12 +28,13 @@ class Playground extends Phaser.Scene {
     }
 
     join() {
+        let hostId = prompt('Peer id (for joining)', 'PeerPressure');
         let peer = new Peer();
         
         peer.on('open', (id) => {
             console.log('open with', id);
             let player = this.makePlayer(id);
-            let conn = peer.connect(HOST_ID);
+            let conn = peer.connect(hostId);
             conn.on('open', () => {
                 console.log('connected to host');
                 this.input.on('pointermove', (pointer) => {
