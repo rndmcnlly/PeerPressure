@@ -23,10 +23,19 @@ class Playground extends Phaser.Scene {
         peer.on('connection', (playerConnection) => {
 
             this.connections.push(playerConnection);
+
+            playerConnection.on('open', () => {
+                // update new player on all known pawns
+                for(let [id,pawn] of Object.entries(this.pawnsById)) {
+                    playerConnection.send({id, x: pawn.x, y: pawn.y});
+                };
+            });
+
             playerConnection.on('data', (msg) => {
                 this.handleUpdate(msg);
+                // relay update to all players
                 for(let otherConnection of this.connections) {
-                    otherConnection.send(msg); // relay msg to all players
+                    otherConnection.send(msg); 
                 }
             });
         });
