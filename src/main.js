@@ -4,8 +4,8 @@ class Playground extends Phaser.Scene {
     }
 
     create() {
-        this.input.keyboard.on('keydown-A', () => this.host());
-        this.input.keyboard.on('keydown-B', () => this.join());
+        this.input.keyboard.once('keydown-A', () => this.host());
+        this.input.keyboard.once('keydown-B', () => this.join());
 
         this.pawnsById = {};
         this.connections = [];
