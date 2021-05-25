@@ -12,11 +12,16 @@ class Playground extends Phaser.Scene {
     }
 
     host() {
+        
         let hostId = prompt('Peer id (for hosting)', 'PeerPressure');
 
-        let host = new Peer(hostId);
-        host.on('connection', (playerConnection) => {
-            console.log('Got connection from ', playerConnection.peer);
+        this.cameras.main.setBackgroundColor('#200');
+        this.add.text(0,0,'HOST '+ hostId, {fontSize: 64}).alpha = 0.25;
+
+        let peer = new Peer(hostId);
+
+        peer.on('connection', (playerConnection) => {
+
             this.connections.push(playerConnection);
             playerConnection.on('data', (msg) => {
                 this.handleUpdate(msg);
@@ -29,13 +34,16 @@ class Playground extends Phaser.Scene {
 
     join() {
         let hostId = prompt('Peer id (for joining)', 'PeerPressure');
+
+        this.cameras.main.setBackgroundColor('#020');
+        this.add.text(0,64,'HOST '+ hostId, {fontSize: 16}).alpha = 0.25;
+
         let peer = new Peer();
         
         peer.on('open', (id) => {
-            console.log('I am', id);
+            this.add.text(0,80,'PEER '+ id, {fontSize: 16}).alpha = 0.25;
             let hostConnection = peer.connect(hostId);
             hostConnection.on('open', () => {
-                console.log('I am connected to host', hostConnection.peer);
                 this.input.on('pointermove', (pointer) => {
                     hostConnection.send({id: id, x: pointer.x, y: pointer.y});
                 });
@@ -47,7 +55,15 @@ class Playground extends Phaser.Scene {
     handleUpdate(msg) {
         let {id,x,y} = msg;
         if (this.pawnsById[id] === undefined) {
-            this.pawnsById[id] = this.makePawn(id);
+            let freshPawn = this.makePawn(id);
+            this.pawnsById[id] = freshPawn;
+            this.tweens.add({
+                targets: freshPawn,
+                scale: {from: 0.8, to: 1},
+                alpha: {from: 0.0, to: 1.0},
+                duration: 250,
+                ease: 'Cubic.Out'
+            });
         }
         let pawn = this.pawnsById[id];
         pawn.x = x;
@@ -55,10 +71,14 @@ class Playground extends Phaser.Scene {
     }
 
     makePawn(id) {
-        let pawn = this.add.graphics();
-        pawn.fillStyle(0xFFFFFF, 1.0);
-        pawn.fillRect(0,0,10,10);
-        return pawn;
+        let box = this.add.graphics();
+        box.fillStyle(0xFFFFFF, 1.0);
+        box.fillRect(-5,-5,10,10);
+        let label = this.add.text(10,-5, id, {fontSize: 10, color: '#8F8'});
+        let container = this.add.container(0,0);
+        container.add(box);
+        container.add(label);
+        return container;
     }
 }
 
