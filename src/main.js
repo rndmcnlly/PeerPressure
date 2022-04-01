@@ -10,7 +10,8 @@ class Playground extends Phaser.Scene {
         this.defaultPeerId = 'PeerPressure';
         this.peerOptions = {
             host: 'peerjs.adamsmith.as',
-            port: 9000
+            port: 9000,
+            secure: true
         };
 
         this.pawnsById = {};
