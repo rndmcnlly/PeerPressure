@@ -4,8 +4,10 @@ class Playground extends Phaser.Scene {
     }
 
     create() {
-        this.input.keyboard.once('keydown-A', () => this.host());
-        this.input.keyboard.once('keydown-B', () => this.join());
+        document.getElementById("hostButton").onclick = () => this.host();
+        document.getElementById("joinButton").onclick = () => this.join();
+
+        this.defaultPeerId = 'PeerPressure';
 
         this.pawnsById = {};
         this.connections = [];
@@ -13,7 +15,7 @@ class Playground extends Phaser.Scene {
 
     host() {
         
-        let hostId = prompt('Peer id (for hosting)', 'PeerPressure');
+        let hostId = prompt('Peer id (for hosting)', this.defaultPeerId);
 
         this.cameras.main.setBackgroundColor('#200');
         this.add.text(0,0,'HOST '+ hostId, {fontSize: 64}).alpha = 0.25;
@@ -42,7 +44,7 @@ class Playground extends Phaser.Scene {
     }
 
     join() {
-        let hostId = prompt('Peer id (for joining)', 'PeerPressure');
+        let hostId = prompt('Peer id (for joining)', this.defaultPeerId);
 
         this.cameras.main.setBackgroundColor('#020');
         this.add.text(0,64,'HOST '+ hostId, {fontSize: 16}).alpha = 0.25;
