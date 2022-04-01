@@ -8,6 +8,10 @@ class Playground extends Phaser.Scene {
         document.getElementById("joinButton").onclick = () => this.join();
 
         this.defaultPeerId = 'PeerPressure';
+        this.peerOptions = {
+            host: 'peerjs.adamsmith.as',
+            port: 9000
+        };
 
         this.pawnsById = {};
         this.connections = [];
@@ -20,7 +24,7 @@ class Playground extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#200');
         this.add.text(0,0,'HOST '+ hostId, {fontSize: 64}).alpha = 0.25;
 
-        let peer = new Peer(hostId);
+        let peer = new Peer(hostId, this.peerOptions);
 
         peer.on('connection', (playerConnection) => {
 
@@ -49,7 +53,7 @@ class Playground extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#020');
         this.add.text(0,64,'HOST '+ hostId, {fontSize: 16}).alpha = 0.25;
 
-        let peer = new Peer();
+        let peer = new Peer(this.peerOptions);
         
         peer.on('open', (id) => {
             this.add.text(0,80,'PEER '+ id, {fontSize: 16}).alpha = 0.25;
